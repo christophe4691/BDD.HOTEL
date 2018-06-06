@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Client :  localhost:3306
--- Généré le :  Mar 05 Juin 2018 à 15:59
+-- Généré le :  Mer 06 Juin 2018 à 10:09
 -- Version du serveur :  5.7.22-0ubuntu18.04.1
 -- Version de PHP :  7.2.5-0ubuntu0.18.04.1
 
@@ -75,7 +75,7 @@ CREATE TABLE `Facture` (
   `Paiment_en_cours` tinyint(1) NOT NULL,
   `Paiment_annulée` tinyint(1) NOT NULL,
   `Paiment_effectuer` tinyint(1) NOT NULL,
-  `fk_Réglement` int(11) NOT NULL,
+  `fk_Reglement` int(11) NOT NULL,
   `fk_service` int(11) NOT NULL,
   `fk_GERANT` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -83,11 +83,13 @@ CREATE TABLE `Facture` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `gérant`
+-- Structure de la table `gerant`
 --
 
-CREATE TABLE `gérant` (
-  `id` int(11) NOT NULL
+CREATE TABLE `gerant` (
+  `id` int(11) NOT NULL,
+  `Nom` varchar(100) NOT NULL,
+  `Prénom` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -109,10 +111,10 @@ CREATE TABLE `hotele` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `Réglement`
+-- Structure de la table `Reglement`
 --
 
-CREATE TABLE `Réglement` (
+CREATE TABLE `Reglement` (
   `id` int(11) NOT NULL,
   `Mode_de_paiment` varchar(50) NOT NULL,
   `Montant` decimal(65,0) NOT NULL
@@ -121,19 +123,27 @@ CREATE TABLE `Réglement` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `Réservation`
+-- Structure de la table `Reservation`
 --
 
-CREATE TABLE `Réservation` (
+CREATE TABLE `Reservation` (
   `id` int(11) NOT NULL,
-  `Date_de_Réservation` date NOT NULL,
-  `Date_de_début_de_la_réservation` date NOT NULL,
-  `date_de_fin_de_la_réservation` date NOT NULL,
+  `Date_de_Réservation` date DEFAULT NULL,
+  `Date_de_début_de_la_réservation` date DEFAULT NULL,
+  `date_de_fin_de_la_réservation` date DEFAULT NULL,
   `Nom_du_client` varchar(50) NOT NULL,
   `Prénom_du_client` varchar(50) NOT NULL,
   `Service_associés` varchar(255) NOT NULL,
-  `fk_Gérant_oid` int(11) NOT NULL
+  `fk_Gérant_oid` int(11) DEFAULT NULL,
+  `fk_clients_oid` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Contenu de la table `Reservation`
+--
+
+INSERT INTO `Reservation` (`id`, `Date_de_Réservation`, `Date_de_début_de_la_réservation`, `date_de_fin_de_la_réservation`, `Nom_du_client`, `Prénom_du_client`, `Service_associés`, `fk_Gérant_oid`, `fk_clients_oid`) VALUES
+(1, '2018-02-02', '2018-02-15', '2018-02-25', 'Dupon', 'Robert', 'aucun', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -236,14 +246,14 @@ ALTER TABLE `Clients`
 --
 ALTER TABLE `Facture`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `fk_réglement` (`fk_Réglement`),
+  ADD UNIQUE KEY `fk_réglement` (`fk_Reglement`),
   ADD UNIQUE KEY `fk_service` (`fk_service`),
   ADD UNIQUE KEY `fk_GERANT` (`fk_GERANT`);
 
 --
--- Index pour la table `gérant`
+-- Index pour la table `gerant`
 --
-ALTER TABLE `gérant`
+ALTER TABLE `gerant`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -258,16 +268,17 @@ ALTER TABLE `hotele`
   ADD KEY `fk_Suite_oid` (`fk_Suite_oid`);
 
 --
--- Index pour la table `Réglement`
+-- Index pour la table `Reglement`
 --
-ALTER TABLE `Réglement`
+ALTER TABLE `Reglement`
   ADD PRIMARY KEY (`id`);
 
 --
--- Index pour la table `Réservation`
+-- Index pour la table `Reservation`
 --
-ALTER TABLE `Réservation`
+ALTER TABLE `Reservation`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `fk_clients_oid` (`fk_clients_oid`),
   ADD UNIQUE KEY `fk_Gérant_oid` (`fk_Gérant_oid`);
 
 --
@@ -324,9 +335,9 @@ ALTER TABLE `Clients`
 ALTER TABLE `Facture`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
--- AUTO_INCREMENT pour la table `gérant`
+-- AUTO_INCREMENT pour la table `gerant`
 --
-ALTER TABLE `gérant`
+ALTER TABLE `gerant`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT pour la table `hotele`
@@ -334,15 +345,15 @@ ALTER TABLE `gérant`
 ALTER TABLE `hotele`
   MODIFY `id` int(50) NOT NULL AUTO_INCREMENT;
 --
--- AUTO_INCREMENT pour la table `Réglement`
+-- AUTO_INCREMENT pour la table `Reglement`
 --
-ALTER TABLE `Réglement`
+ALTER TABLE `Reglement`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
--- AUTO_INCREMENT pour la table `Réservation`
+-- AUTO_INCREMENT pour la table `Reservation`
 --
-ALTER TABLE `Réservation`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `Reservation`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 --
 -- AUTO_INCREMENT pour la table `Salle_de_Bain`
 --
@@ -386,27 +397,22 @@ ALTER TABLE `Chambre`
 --
 ALTER TABLE `Clients`
   ADD CONSTRAINT `Clients_ibfk_1` FOREIGN KEY (`fk_Facture`) REFERENCES `Facture` (`id`),
-  ADD CONSTRAINT `Clients_ibfk_2` FOREIGN KEY (`fk_gerant`) REFERENCES `gérant` (`id`);
+  ADD CONSTRAINT `Clients_ibfk_2` FOREIGN KEY (`fk_gerant`) REFERENCES `gerant` (`id`);
 
 --
 -- Contraintes pour la table `Facture`
 --
 ALTER TABLE `Facture`
   ADD CONSTRAINT `Facture_ibfk_1` FOREIGN KEY (`fk_service`) REFERENCES `Services` (`id`),
-  ADD CONSTRAINT `Facture_ibfk_2` FOREIGN KEY (`fk_Réglement`) REFERENCES `Réglement` (`id`),
-  ADD CONSTRAINT `Facture_ibfk_3` FOREIGN KEY (`fk_GERANT`) REFERENCES `gérant` (`id`);
+  ADD CONSTRAINT `Facture_ibfk_2` FOREIGN KEY (`fk_Reglement`) REFERENCES `Reglement` (`id`),
+  ADD CONSTRAINT `Facture_ibfk_3` FOREIGN KEY (`fk_GERANT`) REFERENCES `gerant` (`id`);
 
 --
--- Contraintes pour la table `hotele`
+-- Contraintes pour la table `Reservation`
 --
-ALTER TABLE `hotele`
-  ADD CONSTRAINT `hotele_ibfk_1` FOREIGN KEY (`fk_Suite_oid`) REFERENCES `Suites` (`id`);
-
---
--- Contraintes pour la table `Réservation`
---
-ALTER TABLE `Réservation`
-  ADD CONSTRAINT `Réservation_ibfk_1` FOREIGN KEY (`fk_Gérant_oid`) REFERENCES `gérant` (`id`);
+ALTER TABLE `Reservation`
+  ADD CONSTRAINT `Reservation_ibfk_1` FOREIGN KEY (`fk_Gérant_oid`) REFERENCES `gerant` (`id`),
+  ADD CONSTRAINT `Reservation_ibfk_2` FOREIGN KEY (`fk_clients_oid`) REFERENCES `Clients` (`id`);
 
 --
 -- Contraintes pour la table `Salle_de_Bain`
@@ -419,8 +425,8 @@ ALTER TABLE `Salle_de_Bain`
 --
 ALTER TABLE `Suites`
   ADD CONSTRAINT `Suites_ibfk_1` FOREIGN KEY (`fk_Service_oid`) REFERENCES `Servives_des_Suites` (`id`),
-  ADD CONSTRAINT `Suites_ibfk_2` FOREIGN KEY (`fk_HOTEL_oid`) REFERENCES `hotele` (`id`),
-  ADD CONSTRAINT `Suites_ibfk_3` FOREIGN KEY (`fk_clients`) REFERENCES `Clients` (`id`);
+  ADD CONSTRAINT `Suites_ibfk_3` FOREIGN KEY (`fk_clients`) REFERENCES `Clients` (`id`),
+  ADD CONSTRAINT `Suites_ibfk_4` FOREIGN KEY (`fk_HOTEL_oid`) REFERENCES `hotele` (`id`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
